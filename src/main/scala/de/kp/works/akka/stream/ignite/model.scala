@@ -1,4 +1,7 @@
-package de.kp.works.akka.stream.ignite.scaladsl
+package de.kp.works.akka.stream.ignite
+
+import akka.NotUsed
+
 /*
  * Copyright (c) 20129 - 2021 Dr. Krusche & Partner PartG. All rights reserved.
  *
@@ -18,20 +21,20 @@ package de.kp.works.akka.stream.ignite.scaladsl
  *
  */
 
-import akka.NotUsed
-import akka.stream.scaladsl.Flow
-import de.kp.works.akka.stream.ignite.{IgniteRecord, IgniteWriteMessage, IgniteWriteSettings}
+/**
+ * The current implementation does not support `passThrough`.
+ */
+object IgniteWriteMessage {
 
-import scala.collection.immutable
+  /** Apply method to use when not using passThrough */
 
-object IgniteFlow {
-  /**
-   * Flow to write `IgniteRecord`s to Apache Ignite,
-   * elements within one list are stored within one
-   * transaction.
-   */
-  def create(
-    settings: IgniteWriteSettings): Flow[immutable.Seq[IgniteWriteMessage[IgniteRecord, NotUsed]],
-    immutable.Seq[IgniteWriteMessage[IgniteRecord, NotUsed]], NotUsed] = ???
+  def apply[T](record: T): IgniteWriteMessage[T, NotUsed] =
+    IgniteWriteMessage(record, NotUsed)
 
+  /** Java-api - without passThrough */
+
+  def create[T](record: T): IgniteWriteMessage[T, NotUsed] =
+    IgniteWriteMessage(record, NotUsed)
 }
+
+final case class IgniteWriteMessage[T, C](record: T, passThrough: C)

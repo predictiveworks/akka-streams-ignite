@@ -18,20 +18,26 @@ package de.kp.works.akka.stream.ignite.scaladsl
  *
  */
 
-import akka.Done
-import akka.stream.scaladsl.Sink
-import de.kp.works.akka.stream.ignite.{IgniteRecord, IgniteWriteSettings}
+import akka.{Done, NotUsed}
+import akka.stream.scaladsl.{Keep, Sink}
+import de.kp.works.akka.stream.ignite.{IgniteRecord, IgniteWriteMessage, IgniteWriteSettings}
 
+import scala.collection.immutable
 import scala.concurrent.Future
 
 /**
  * Scala API.
  */
 object IgniteSink {
-
-  /*
-   * Sink to write [IgniteRecord] to Apache Ignite, elements within
-   * one sequence are stored in one transaction
+  /**
+   * Sink to write `IgniteRecord`s to Apache Ignite,
+   * elements within one sequence are stored in one
+   * transaction
    */
-  def apply(writeSettings:IgniteWriteSettings):Sink[IgniteRecord, Future[Done]] = ???
+  def create(
+    settings:IgniteWriteSettings):Sink[immutable.Seq[IgniteWriteMessage[IgniteRecord, NotUsed]], Future[Done]]  =
+      IgniteFlow
+        .create(settings)
+        .toMat(Sink.ignore)(Keep.right)
+
 }

@@ -18,11 +18,12 @@ package de.kp.works.akka.stream.ignite.javadsl
  *
  */
 
-import akka.Done
-import akka.stream.javadsl.Sink
-import de.kp.works.akka.stream.ignite.{IgniteRecord, IgniteWriteSettings}
+import akka.{Done, NotUsed}
+import akka.stream.javadsl.{Keep, Sink}
+import de.kp.works.akka.stream.ignite.{IgniteRecord, IgniteWriteMessage, IgniteWriteSettings}
 
 import java.util.concurrent.CompletionStage
+import java.util.{List => JList}
 
 object IgniteSink {
   /**
@@ -30,6 +31,11 @@ object IgniteSink {
    *
    * The materialized value completes on stream completion.
    */
-  def create(writeSettings:IgniteWriteSettings):Sink[IgniteRecord, CompletionStage[Done]] = ???
+  def create(
+    settings:IgniteWriteSettings):Sink[JList[IgniteWriteMessage[IgniteRecord, NotUsed]], CompletionStage[Done]] =
+      IgniteFlow
+        .create(settings)
+        .toMat(Sink.ignore[JList[IgniteWriteMessage[IgniteRecord, NotUsed]]], Keep.right[NotUsed, CompletionStage[Done]])
+
 
 }
