@@ -20,6 +20,7 @@ package de.kp.works.akka.stream.ignite.scaladsl
 
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
+import de.kp.works.akka.stream.ignite.impl.IgniteFlowStage
 import de.kp.works.akka.stream.ignite.{IgniteRecord, IgniteWriteMessage, IgniteWriteSettings}
 
 import scala.collection.immutable
@@ -32,6 +33,8 @@ object IgniteFlow {
    */
   def create(
     settings: IgniteWriteSettings): Flow[immutable.Seq[IgniteWriteMessage[IgniteRecord, NotUsed]],
-    immutable.Seq[IgniteWriteMessage[IgniteRecord, NotUsed]], NotUsed] = ???
+    immutable.Seq[IgniteWriteMessage[IgniteRecord, NotUsed]], NotUsed] =
+    Flow
+      .fromGraph(new IgniteFlowStage[IgniteRecord, NotUsed](settings))
 
 }
