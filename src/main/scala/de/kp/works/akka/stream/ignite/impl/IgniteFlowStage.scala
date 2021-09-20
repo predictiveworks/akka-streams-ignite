@@ -19,8 +19,8 @@ package de.kp.works.akka.stream.ignite.impl
  */
 
 import akka.annotation.InternalApi
-import akka.stream.{Attributes, FlowShape}
-import akka.stream.stage.{GraphStage, GraphStageLogic}
+import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
+import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler, StageLogging}
 import de.kp.works.akka.stream.ignite.{IgniteWriteMessage, IgniteWriteSettings}
 
 import scala.collection.immutable
@@ -32,8 +32,60 @@ import scala.collection.immutable
 private[ignite] class IgniteFlowStage[T, C](settings: IgniteWriteSettings)
   extends GraphStage[FlowShape[immutable.Seq[IgniteWriteMessage[T, C]], immutable.Seq[IgniteWriteMessage[T, C]]]] {
 
-  override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = ???
+  private val in = Inlet[immutable.Seq[IgniteWriteMessage[T, C]]]("IgniteFlow.in")
+  private val out = Outlet[immutable.Seq[IgniteWriteMessage[T, C]]]("IgniteFlow.out")
 
-  override def shape: FlowShape[immutable.Seq[IgniteWriteMessage[T, C]], immutable.Seq[IgniteWriteMessage[T, C]]] = ???
+  override def shape: FlowShape[immutable.Seq[IgniteWriteMessage[T, C]], immutable.Seq[IgniteWriteMessage[T, C]]] =
+    FlowShape(in, out)
 
+  override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new IgniteStageLogic()
+
+  private class IgniteStageLogic extends GraphStageLogic(shape) with InHandler with OutHandler with StageLogging {
+    /*
+     * Ignite connection handling: create a new instance
+     * of [IgniteClient] before this stage starts, and,
+     * close the respective client after this stage stopped.
+     */
+    private var client:IgniteClient = _
+
+    override def preStart(): Unit =
+      client = new IgniteClient(settings)
+
+    override def postStop(): Unit =
+      client.close()
+
+    setHandlers(in, out, this)
+
+    /**
+     * Write messages to Apache Ignite leveraging
+     * the [IgniteClient]
+     */
+    def write(messages: immutable.Seq[IgniteWriteMessage[T, C]]):Unit =
+      if (client != null && !client.isClosed)
+        client.write(messages)
+
+    override def onPush(): Unit = {
+
+      /* Retrieve new messages */
+      val messages = grab(in)
+
+      /* Write messages to Apache Ignite */
+      if (messages.nonEmpty) {
+
+        write(messages)
+        push(out, messages)
+
+      }
+
+      tryPull(in)
+
+    }
+
+    override def onPull(): Unit = tryPull()
+
+    private def tryPull(): Unit =
+      if (!isClosed(in) && !hasBeenPulled(in)) {
+        pull(in)
+      }
+  }
 }
