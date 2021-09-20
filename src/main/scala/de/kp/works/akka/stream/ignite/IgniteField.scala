@@ -18,13 +18,17 @@ package de.kp.works.akka.stream.ignite
  *
  */
 
-class IgniteField {
+import de.kp.works.akka.stream.ignite.FieldTypes.FieldType
 
-  def getName:String = ???
+class IgniteField(fieldName:String, fieldType:FieldType) {
+
+  def getName:String = fieldName
   /*
    * This is the Java representation of the field
    * data type, e.g. java.lang.String
    */
-  def getType:String = ???
+  def getJavaType:String = FieldTypes.toJava(fieldType)
+
+  def getType:FieldType = fieldType
 
 }

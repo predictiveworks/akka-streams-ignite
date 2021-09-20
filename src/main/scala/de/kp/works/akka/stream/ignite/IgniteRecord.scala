@@ -1,4 +1,7 @@
 package de.kp.works.akka.stream.ignite
+
+import de.kp.works.akka.stream.ignite.FieldTypes
+
 /*
  * Copyright (c) 20129 - 2021 Dr. Krusche & Partner PartG. All rights reserved.
  *
@@ -30,13 +33,23 @@ class IgniteRecord(schema:IgniteSchema, fields:Map[String,Any]) extends Serializ
   def getAsString(fieldName:String):String = {
 
     val field = schema.getField(fieldName)
-    ???
+    val value = fields(fieldName)
+
+    field.getType match {
+      case FieldTypes.BOOLEAN =>
+        value.asInstanceOf[Boolean].toString
+      case FieldTypes.DATE =>
+        value.asInstanceOf[java.sql.Date].toString
+      case FieldTypes.DOUBLE =>
+        value.asInstanceOf[Double].toString
+      // TODO
+      case _ => throw new Exception(s"Unknown field type detected.")
+    }
+
   }
   /**
    * Get the schema of the record.
    */
-  def getSchema:IgniteSchema = {
-    schema
-  }
+  def getSchema:IgniteSchema = schema
 
 }

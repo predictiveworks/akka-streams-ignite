@@ -20,6 +20,29 @@ package de.kp.works.akka.stream.ignite
 
 import com.typesafe.config.Config
 
+object FieldTypes extends Enumeration {
+
+  type FieldType = Value
+
+  val BOOLEAN: FieldTypes.Value = Value(1, "BOOLEAN")
+  val DATE: FieldTypes.Value    = Value(2, "DATE")
+  val DOUBLE: FieldTypes.Value  = Value(3, "DOUBLE")
+
+  def toJava(`type`:FieldType):String = {
+    `type` match {
+      case BOOLEAN =>
+        "java.lang.Boolean"
+      case DATE =>
+        "java.sql.Date"
+      case DOUBLE =>
+        "java.lang.Double"
+      // TODO
+      case _ => throw new Exception(s"Unknown field type detected.")
+    }
+  }
+
+}
+
 object IgniteSchema {
 
   def schemaOf(fields:List[IgniteField]):IgniteSchema =

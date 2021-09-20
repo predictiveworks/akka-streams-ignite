@@ -280,7 +280,7 @@ class IgniteClient(settings:IgniteWriteSettings) {
     val fields = new java.util.LinkedHashMap[String,String]()
 
     schema.getFields.foreach(field =>
-      fields.put(field.getName, field.getType)
+      fields.put(field.getName, field.getJavaType)
     )
 
     fields
