@@ -36,13 +36,57 @@ class IgniteRecord(schema:IgniteSchema, fields:Map[String,Any]) extends Serializ
     val value = fields(fieldName)
 
     field.getType match {
+      /*
+       * Primitive data types
+       */
       case FieldTypes.BOOLEAN =>
         value.asInstanceOf[Boolean].toString
       case FieldTypes.DATE =>
         value.asInstanceOf[java.sql.Date].toString
       case FieldTypes.DOUBLE =>
         value.asInstanceOf[Double].toString
-      // TODO
+      case FieldTypes.FLOAT =>
+        value.asInstanceOf[Float].toString
+      case FieldTypes.INT =>
+        value.asInstanceOf[Int].toString
+      case FieldTypes.LONG =>
+        value.asInstanceOf[Long].toString
+      case FieldTypes.SHORT =>
+        value.asInstanceOf[Short].toString
+      case FieldTypes.STRING =>
+        value.asInstanceOf[String]
+      case FieldTypes.TIMESTAMP =>
+        value.asInstanceOf[java.sql.Timestamp].toString
+      /*
+       * Complex data types: the current implementation supports
+       * Array data types in form of their serialized representation
+       */
+      case FieldTypes.ARRAY =>
+        val subType = field.getSubType
+        value.asInstanceOf[List[_]].map(v => {
+          subType match {
+            case FieldTypes.BOOLEAN =>
+              v.asInstanceOf[Boolean].toString
+            case FieldTypes.DATE =>
+              v.asInstanceOf[java.sql.Date].toString
+            case FieldTypes.DOUBLE =>
+              v.asInstanceOf[Double].toString
+            case FieldTypes.FLOAT =>
+              v.asInstanceOf[Float].toString
+            case FieldTypes.INT =>
+              v.asInstanceOf[Int].toString
+            case FieldTypes.LONG =>
+              v.asInstanceOf[Long].toString
+            case FieldTypes.SHORT =>
+              v.asInstanceOf[Short].toString
+            case FieldTypes.STRING =>
+              v.asInstanceOf[String]
+            case FieldTypes.TIMESTAMP =>
+              v.asInstanceOf[java.sql.Timestamp].toString
+            case _ => throw new Exception(s"Unknown field subtype detected.")
+          }
+        }).mkString(",")
+
       case _ => throw new Exception(s"Unknown field type detected.")
     }
 

@@ -18,7 +18,7 @@ package de.kp.works.akka.stream.ignite.impl
  *
  */
 
-import de.kp.works.akka.stream.ignite.{IgniteRecord, IgniteWriteMessage, IgniteWriteSettings}
+import de.kp.works.akka.stream.ignite.{FieldTypes, IgniteRecord, IgniteWriteMessage, IgniteWriteSettings}
 import org.apache.ignite.{Ignite, IgniteCache, Ignition}
 import org.apache.ignite.binary.BinaryObject
 import org.apache.ignite.cache.QueryEntity
@@ -302,7 +302,20 @@ class IgniteClient(settings:IgniteWriteSettings) {
     val fields = record.getSchema.getFields
     fields.foreach(field => {
       val fieldName = field.getName
-      builder.setField(fieldName, record.get(fieldName))
+      val fieldType = field.getType
+      /*
+       * Primitive data types are mapped onto their
+       * Java class representation
+       */
+      if (fieldType == FieldTypes.ARRAY) {
+        /*
+         * Complex data types are registered in a
+         * serialized representation
+         */
+        builder.setField(fieldName, record.getAsString(fieldName))
+
+      } else
+        builder.setField(fieldName, record.get(fieldName))
 
       keyparts += record.getAsString(fieldName)
     })

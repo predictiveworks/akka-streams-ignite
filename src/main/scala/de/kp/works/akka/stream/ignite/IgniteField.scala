@@ -22,6 +22,8 @@ import de.kp.works.akka.stream.ignite.FieldTypes.FieldType
 
 class IgniteField(fieldName:String, fieldType:FieldType) {
 
+  private var subType:FieldType = _
+
   def getName:String = fieldName
   /*
    * This is the Java representation of the field
@@ -30,5 +32,13 @@ class IgniteField(fieldName:String, fieldType:FieldType) {
   def getJavaType:String = FieldTypes.toJava(fieldType)
 
   def getType:FieldType = fieldType
+
+  def isArray:Boolean = fieldType == FieldTypes.ARRAY
+
+  def setSubType(sType:FieldType):Unit = {
+    subType = sType
+  }
+
+  def getSubType:FieldType = subType
 
 }
