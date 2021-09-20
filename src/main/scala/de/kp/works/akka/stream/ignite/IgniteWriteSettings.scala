@@ -18,6 +18,23 @@ package de.kp.works.akka.stream.ignite
  *
  */
 
+import org.apache.ignite.configuration.IgniteConfiguration
+
 class IgniteWriteSettings {
+  /**
+   * The auto flush frequency of the stream buffer is
+   * internally set to 0.5 sec (500 ms)
+   */
+  def getAutoFlushFrequency:Int = 500
+
+  def getCacheName:String = ???
+
+  def getTimeWindow:Int = ???
+
+  /**
+   * A helper method to represent these settings as
+   * Apache Ignite configuration
+   */
+  def toConfiguration:IgniteConfiguration = ???
 
 }
