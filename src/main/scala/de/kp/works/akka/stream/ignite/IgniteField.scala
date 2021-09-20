@@ -18,25 +18,13 @@ package de.kp.works.akka.stream.ignite
  *
  */
 
-class IgniteRecord(schema:IgniteSchema, fields:Map[String,Any]) extends Serializable {
+class IgniteField {
 
-  /**
-   * Get the value of a field in the record.
+  def getName:String = ???
+  /*
+   * This is the Java representation of the field
+   * data type, e.g. java.lang.String
    */
-  def get(fieldName:String):Any = {
-    fields.get(fieldName)
-  }
-
-  def getAsString(fieldName:String):String = {
-
-    val field = schema.getField(fieldName)
-    ???
-  }
-  /**
-   * Get the schema of the record.
-   */
-  def getSchema:IgniteSchema = {
-    schema
-  }
+  def getType:String = ???
 
 }

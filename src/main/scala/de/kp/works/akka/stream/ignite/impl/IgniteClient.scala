@@ -25,8 +25,9 @@ import org.apache.ignite.cache.QueryEntity
 import org.apache.ignite.configuration.CacheConfiguration
 import org.apache.ignite.stream.StreamSingleTupleExtractor
 
+import java.security.MessageDigest
 import scala.collection.JavaConversions._
-import scala.collection.immutable
+import scala.collection.{immutable, mutable}
 import java.util.{ArrayList => JArrayList}
 import javax.cache.configuration.FactoryBuilder
 import javax.cache.expiry.{CreatedExpiryPolicy, Duration}
@@ -273,12 +274,51 @@ class IgniteClient(settings:IgniteWriteSettings) {
    *
    ******************************/
 
-  private def buildFields():java.util.LinkedHashMap[String,String] = ???
+  private def buildFields():java.util.LinkedHashMap[String,String] = {
+
+    val schema = settings.getSchema
+    val fields = new java.util.LinkedHashMap[String,String]()
+
+    schema.getFields.foreach(field =>
+      fields.put(field.getName, field.getType)
+    )
+
+    fields
+
+  }
 
   /**
    * This method determines how to represent an [IgniteRecord]
    * as the respective Apache Ignite cache entry
    */
-  private def buildEntry(record:IgniteRecord):(String, BinaryObject) = ???
+  private def buildEntry(record:IgniteRecord):(String, BinaryObject) = {
+
+    val keyparts = mutable.ArrayBuffer.empty[String]
+    val builder = ignite.binary().builder(cacheName)
+    /*
+     * In order to guarantee the respective field order,
+     * the record schema is used
+     */
+    val fields = record.getSchema.getFields
+    fields.foreach(field => {
+      val fieldName = field.getName
+      builder.setField(fieldName, record.get(fieldName))
+
+      keyparts += record.getAsString(fieldName)
+    })
+
+    val cacheValue = builder.build()
+    /*
+     * The cache key is built from the content
+     * to enable the detection of duplicates.
+     */
+    val serialized = keyparts.mkString("#")
+
+    val cacheKey = new String(MessageDigest.getInstance("MD5")
+      .digest(serialized.getBytes("UTF-8")))
+
+    (cacheKey, cacheValue)
+
+  }
 
 }

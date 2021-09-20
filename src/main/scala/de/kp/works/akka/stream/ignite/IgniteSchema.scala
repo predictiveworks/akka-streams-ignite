@@ -18,25 +18,35 @@ package de.kp.works.akka.stream.ignite
  *
  */
 
-class IgniteRecord(schema:IgniteSchema, fields:Map[String,Any]) extends Serializable {
+import com.typesafe.config.Config
 
-  /**
-   * Get the value of a field in the record.
-   */
-  def get(fieldName:String):Any = {
-    fields.get(fieldName)
+object IgniteSchema {
+
+  def schemaOf(fields:List[IgniteField]):IgniteSchema =
+    new IgniteSchema(fields)
+
+  def schemaOf(config:Config):IgniteSchema =
+    new IgniteSchema(config2Fields(config))
+
+  private def config2Fields(config:Config):List[IgniteField] = ???
+
+}
+
+class IgniteSchema(fields:List[IgniteField]) {
+
+  private val fieldMap = fields
+    .map(field => (field.getName, field))
+    .toMap
+
+  def getField(fieldName:String): IgniteField = {
+    if (fieldMap.contains(fieldName))
+      fieldMap(fieldName)
+
+    else
+      throw new Exception(s"Provided field name `$fieldName` is unknown.")
+
   }
 
-  def getAsString(fieldName:String):String = {
-
-    val field = schema.getField(fieldName)
-    ???
-  }
-  /**
-   * Get the schema of the record.
-   */
-  def getSchema:IgniteSchema = {
-    schema
-  }
+  def getFields:List[IgniteField] = fields
 
 }

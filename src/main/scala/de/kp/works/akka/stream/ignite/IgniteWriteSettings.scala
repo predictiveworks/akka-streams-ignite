@@ -18,18 +18,34 @@ package de.kp.works.akka.stream.ignite
  *
  */
 
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.ignite.configuration.IgniteConfiguration
 
 class IgniteWriteSettings {
+
+  private val path = "reference.conf"
+  /**
+   * This is the reference to the overall configuration
+   * file that holds all configuration required for this
+   * application
+   */
+  private val cfg: Config = ConfigFactory
+    .load(path).getConfig("akka-streams-ignite")
   /**
    * The auto flush frequency of the stream buffer is
    * internally set to 0.5 sec (500 ms)
    */
-  def getAutoFlushFrequency:Int = 500
+  def getAutoFlushFrequency:Int =
+    cfg.getInt("autoFlushFrequency")
 
-  def getCacheName:String = ???
+  def getCacheName:String =
+    cfg.getString("cacheName")
 
-  def getTimeWindow:Int = ???
+  def getSchema:IgniteSchema =
+    IgniteSchema.schemaOf(cfg.getConfig("schema"))
+
+  def getTimeWindow:Int =
+    cfg.getInt("timeWindow")
 
   /**
    * A helper method to represent these settings as
