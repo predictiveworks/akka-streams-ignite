@@ -22,6 +22,14 @@ import com.typesafe.config.{Config, ConfigObject}
 
 import scala.collection.JavaConversions._
 
+/**
+ * The current implementation supports more or less
+ * primitive data types, as this is compliant with
+ * the ones supported by Apache Ignite.
+ *
+ * An exception is ARRAY, but this data type is mapped
+ * onto its serialized [STRING] value.
+ */
 object FieldTypes extends Enumeration {
 
   type FieldType = Value
@@ -80,7 +88,10 @@ object IgniteSchema {
 
   def schemaOf(config:Config):IgniteSchema =
     new IgniteSchema(config2Fields(config))
-
+  /**
+   * A helper method to build the list of schema fields
+   * from the fields defined in the configuration file.
+   */
   private def config2Fields(config:Config):List[IgniteField] = {
 
     val fields = config.getList("fields")

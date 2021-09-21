@@ -1,7 +1,4 @@
 package de.kp.works.akka.stream.ignite
-
-import akka.NotUsed
-
 /*
  * Copyright (c) 20129 - 2021 Dr. Krusche & Partner PartG. All rights reserved.
  *
@@ -20,6 +17,8 @@ import akka.NotUsed
  * @author Stefan Krusche, Dr. Krusche & Partner PartG
  *
  */
+
+import akka.NotUsed
 
 /**
  * The current implementation does not support `passThrough`.

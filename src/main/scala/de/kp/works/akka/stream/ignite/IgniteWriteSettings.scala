@@ -19,7 +19,10 @@ package de.kp.works.akka.stream.ignite
  */
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.ignite.configuration.IgniteConfiguration
+import org.apache.ignite.configuration.{DataRegionConfiguration, DataStorageConfiguration, IgniteConfiguration}
+import org.apache.ignite.logger.java.JavaLogger
+import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
+import org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder
 
 class IgniteWriteSettings {
 
@@ -51,6 +54,52 @@ class IgniteWriteSettings {
    * A helper method to represent these settings as
    * Apache Ignite configuration
    */
-  def toConfiguration:IgniteConfiguration = ???
+  def toConfiguration:IgniteConfiguration = {
+
+    val igniteCfg = new IgniteConfiguration
+    /*
+     * Configure default java logger which leverages
+     * file config/java.util.logging.properties
+     */
+    val logger = new JavaLogger()
+    igniteCfg.setGridLogger(logger)
+    /*
+     * Configuring the data storage
+     */
+    val dataStorageCfg = new DataStorageConfiguration
+    /*
+     * Default memory region that grows endlessly. Any cache will
+     * be bound to this memory region unless another region is set
+     * in the cache's configuration.
+     */
+    val dataRegionCfg = new DataRegionConfiguration
+    dataRegionCfg.setName("Default_Region")
+    /*
+     * 100 MB memory region
+     */
+    dataRegionCfg.setInitialSize(100 * 1024 * 1024)
+    dataStorageCfg.setSystemRegionMaxSize(2L * 1024 * 1024 * 1024)
+
+    igniteCfg.setDataStorageConfiguration(dataStorageCfg)
+    /*
+     * Explicitly configure TCP discovery SPI to provide
+     * list of initial nodes.
+     */
+    val discoverySpi = new TcpDiscoverySpi
+    /*
+     * Ignite provides several options for automatic discovery
+     * that can be used instead os static IP based discovery.
+     */
+    val ipFinder = new TcpDiscoveryMulticastIpFinder
+
+    val addresses = cfg.getString("addresses")
+    ipFinder.setAddresses(java.util.Arrays.asList(addresses))
+
+    discoverySpi.setIpFinder(ipFinder)
+    igniteCfg.setDiscoverySpi(discoverySpi)
+
+    igniteCfg
+
+  }
 
 }
